@@ -20,6 +20,7 @@ func newFiguresRoutes(handler fiber.Router, f usecase.Figure, l logger.Interface
 	h := handler.Group("/figures")
 	{
 		h.Get("", r.figures)
+		h.Get("/:id", r.figure)
 	}
 }
 
@@ -53,4 +54,26 @@ func (r *figuresRoutes) figures(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(figuresResponse{figures})
+}
+
+type figureResponse struct {
+	Figure model.Figure `json:"figure"`
+}
+
+func (r *figuresRoutes) figure(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("id")
+	if err != nil {
+		r.l.Error(err, "http - v1 - id")
+
+		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	figure, err := r.f.Figure(c.UserContext(), id)
+	if err != nil {
+		r.l.Error(err, "http - v1 - figure")
+
+		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(figureResponse{figure})
 }

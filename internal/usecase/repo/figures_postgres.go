@@ -18,6 +18,33 @@ func New(pg *postgres.Postgres) *FiguresRepo {
 	return &FiguresRepo{pg}
 }
 
+func (r *FiguresRepo) GetFigureById(ctx context.Context, id int) (model.Figure, error) {
+
+	figure := model.Figure{}
+
+	sql, _, err := r.Builder.
+		Select("id, name, created_at, updated_at, is_draft").
+		From("figures").
+		Where("id = $1").
+		ToSql()
+
+	if err != nil {
+		return figure, fmt.Errorf("FiguresRepo - GetFigureById - r.Builder: %w", err)
+	}
+
+	row := r.Pool.QueryRow(ctx, sql, id)
+	if err != nil {
+		return figure, fmt.Errorf("FiguresRepo - GetFigureById - r.Pool.QueryRow: %w", err)
+	}
+
+	err = row.Scan(&figure.ID, &figure.Name, &figure.CreatedAt, &figure.UpdatedAt, &figure.IsDraft)
+	if err != nil {
+		return figure, fmt.Errorf("FiguresRepo - GetFigureById - row.Scan: %w", err)
+	}
+
+	return figure, nil
+}
+
 func (r *FiguresRepo) GetFigures(ctx context.Context, count int) ([]model.Figure, error) {
 	if count > 50 {
 		count = 50
