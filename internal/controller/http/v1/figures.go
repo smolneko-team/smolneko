@@ -4,6 +4,7 @@ import (
 	"smolneko/internal/model"
 	"smolneko/internal/usecase"
 	"smolneko/pkg/logger"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,7 +19,7 @@ func newFiguresRoutes(handler fiber.Router, f usecase.Figure, l logger.Interface
 
 	h := handler.Group("/figures")
 	{
-		h.Get("/:count?", r.figures) // optional
+		h.Get("", r.figures)
 	}
 }
 
@@ -27,14 +28,20 @@ type figuresResponse struct {
 }
 
 func (r *figuresRoutes) figures(c *fiber.Ctx) error {
-	// Optional
-	count, err := c.ParamsInt("count")
-	// If the parameter is NOT a number, zero and an error will be returned https://docs.gofiber.io/api/ctx#paramsint
-	if count == 0 {
-		count = 20
-	} else if err != nil {
-		r.l.Error(err, "http - v1 - count")
+	// Optional query parameter
+	var count int
 
+	if c.Query("count") == "" {
+		count = 20
+	} else if value, err := strconv.Atoi(c.Query("count")); err == nil {
+		count = value
+	} else {
+		r.l.Error(err, "http - v1 - count")
+		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	if count <= 0 {
+		r.l.Error("count is negative or zero", count, "http - v1 - count")
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
