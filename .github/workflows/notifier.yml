@@ -16,10 +16,10 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            [${{ github.actor }}](https://github.com/${{ github.actor }}) created commit.
+            Message: [${{ github.event.commits[0].message }}](https://github.com/${{ github.repository }}/commit/${{github.sha}})
+            
+            Commit by [${{ github.actor }}](https://github.com/${{ github.actor }})
             Repository: ${{ github.repository }}
             Branch: ${{ github.ref }}
             
-            Commit message: ${{ github.event.commits[0].message }}
             
-            See changes: [link](https://github.com/${{ github.repository }}/commit/${{github.sha}})
