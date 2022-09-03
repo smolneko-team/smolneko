@@ -4,17 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"smolneko/internal/model"
-	"smolneko/pkg/postgres"
+	"github.com/smolneko-team/smolneko/internal/model"
+	"github.com/smolneko-team/smolneko/pkg/postgres"
 )
-
-const _defaultEntityCap = 50
 
 type FiguresRepo struct {
 	*postgres.Postgres
 }
 
-func New(pg *postgres.Postgres) *FiguresRepo {
+func NewFiguresRepo(pg *postgres.Postgres) *FiguresRepo {
 	return &FiguresRepo{pg}
 }
 
@@ -23,7 +21,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id int) (model.Figure, 
 	figure := model.Figure{}
 
 	sql, _, err := r.Builder.
-		Select("id, name, created_at, updated_at, is_draft").
+		Select("id, character_id, name, description, type, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_draft").
 		From("figures").
 		Where("id = $1").
 		ToSql()
@@ -37,7 +35,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id int) (model.Figure, 
 		return figure, fmt.Errorf("FiguresRepo - GetFigureById - r.Pool.QueryRow: %w", err)
 	}
 
-	err = row.Scan(&figure.ID, &figure.Name, &figure.CreatedAt, &figure.UpdatedAt, &figure.IsDraft)
+	err = row.Scan(&figure.ID, &figure.CharacterID, &figure.Name, &figure.Description, &figure.Type, &figure.Size, &figure.Height, &figure.Materials, &figure.ReleaseDate, &figure.Manufacturer, &figure.Links, &figure.Price, &figure.CreatedAt, &figure.UpdatedAt, &figure.IsDraft)
 	if err != nil {
 		return figure, fmt.Errorf("FiguresRepo - GetFigureById - row.Scan: %w", err)
 	}
@@ -51,7 +49,7 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int) ([]model.Figure
 	}
 
 	sql, _, err := r.Builder.
-		Select("id, name, created_at, updated_at, is_draft").
+		Select("id, character_id, name, description, type, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_draft").
 		From("figures").
 		Limit(uint64(count)).
 		ToSql()
@@ -66,18 +64,18 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int) ([]model.Figure
 	}
 	defer rows.Close()
 
-	entities := make([]model.Figure, 0, _defaultEntityCap)
+	figures := make([]model.Figure, 0, _defaultEntityCap)
 
 	for rows.Next() {
-		e := model.Figure{}
+		figure := model.Figure{}
 
-		err = rows.Scan(&e.ID, &e.Name, &e.CreatedAt, &e.UpdatedAt, &e.IsDraft)
+		err = rows.Scan(&figure.ID, &figure.CharacterID, &figure.Name, &figure.Description, &figure.Type, &figure.Size, &figure.Height, &figure.Materials, &figure.ReleaseDate, &figure.Manufacturer, &figure.Links, &figure.Price, &figure.CreatedAt, &figure.UpdatedAt, &figure.IsDraft)
 		if err != nil {
 			return nil, fmt.Errorf("FiguresRepo - GetFigures - rows.Scan: %w", err)
 		}
 
-		entities = append(entities, e)
+		figures = append(figures, figure)
 	}
 
-	return entities, nil
+	return figures, nil
 }

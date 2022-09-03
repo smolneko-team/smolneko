@@ -10,26 +10,26 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type figuresRoutes struct {
-	f usecase.Figure
+type charactersRoutes struct {
+	c usecase.Character
 	l logger.Interface
 }
 
-func newFiguresRoutes(handler fiber.Router, f usecase.Figure, l logger.Interface) {
-	r := &figuresRoutes{f, l}
+func newCharactersRoutes(handler fiber.Router, c usecase.Character, l logger.Interface) {
+	r := &charactersRoutes{c, l}
 
-	h := handler.Group("/figures")
+	h := handler.Group("/characters")
 	{
-		h.Get("", r.figures)
-		h.Get("/:id", r.figure)
+		h.Get("", r.characters)
+		h.Get("/:id", r.character)
 	}
 }
 
-type figuresResponse struct {
-	Figures []model.Figure `json:"figures"`
+type charactersResponse struct {
+	Characters []model.Character `json:"characters"`
 }
 
-func (r *figuresRoutes) figures(c *fiber.Ctx) error {
+func (r *charactersRoutes) characters(c *fiber.Ctx) error {
 	// Optional query parameter
 	var count int
 
@@ -47,21 +47,21 @@ func (r *figuresRoutes) figures(c *fiber.Ctx) error {
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	figures, err := r.f.Figures(c.UserContext(), count)
+	characters, err := r.c.Characters(c.UserContext(), count)
 	if err != nil {
 		r.l.Error(err, "http - v1 - figures")
 
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(figuresResponse{figures})
+	return c.Status(fiber.StatusOK).JSON(charactersResponse{characters})
 }
 
-type figureResponse struct {
-	Figure model.Figure `json:"figure"`
+type characterResponse struct {
+	Character model.Character `json:"character"`
 }
 
-func (r *figuresRoutes) figure(c *fiber.Ctx) error {
+func (r *charactersRoutes) character(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		r.l.Error(err, "http - v1 - id")
@@ -69,12 +69,12 @@ func (r *figuresRoutes) figure(c *fiber.Ctx) error {
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	figure, err := r.f.Figure(c.UserContext(), id)
+	character, err := r.c.Character(c.UserContext(), id)
 	if err != nil {
 		r.l.Error(err, "http - v1 - figure")
 
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(figureResponse{figure})
+	return c.Status(fiber.StatusOK).JSON(characterResponse{character})
 }

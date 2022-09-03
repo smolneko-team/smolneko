@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"smolneko/internal/usecase"
-	"smolneko/pkg/logger"
+	"github.com/smolneko-team/smolneko/internal/usecase"
+	"github.com/smolneko-team/smolneko/pkg/logger"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -10,7 +10,7 @@ import (
 	fRecover "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure) {
+func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure, c usecase.Character) {
 	// TODO Config middlewares
 	app.Use(
 		fRecover.New(),
@@ -42,5 +42,6 @@ func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure) {
 	h := app.Group("/v1")
 	{
 		newFiguresRoutes(h, f, l)
+		newCharactersRoutes(h, c, l)
 	}
 }

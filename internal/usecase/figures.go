@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"smolneko/internal/model"
+	"github.com/smolneko-team/smolneko/internal/model"
 )
 
 type FiguresUseCase struct {
 	repo FiguresRepo
 }
 
-func New(r FiguresRepo) *FiguresUseCase {
+func NewFigures(r FiguresRepo) *FiguresUseCase {
 	return &FiguresUseCase{
 		repo: r,
 	}

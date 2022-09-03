@@ -1,18 +1,18 @@
 package main
 
 import (
-    "log"
+	"log"
 
-    "smolneko/config"
-    "smolneko/internal/app"
+	"github.com/smolneko-team/smolneko/config"
+	"github.com/smolneko-team/smolneko/internal/app"
 )
 
 func main() {
 
-    cfg, err := config.NewConfig()
-    if err != nil {
-        log.Fatalf("config error: %s", err)
-    }
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatalf("config error: %s", err)
+	}
 
-    app.Run(cfg)
+	app.Run(cfg)
 }
