@@ -16,7 +16,7 @@ This is the server side (backend) of the project. The website (frontend) is curr
 
 ## Contribute
 
-Contributions are welcome! 😊 You can add a to the project or support active development. Feel free to open a pull request to fix a bug, or open an issue to discuss a new feature or change.
+Contributions are welcome! 😊 You can add a star to the project or support active development. Feel free to open a pull request to fix a bug, or open an issue to discuss a new feature or change.
 
 ## License
 
