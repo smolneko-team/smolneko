@@ -11,7 +11,7 @@ type Figure struct {
 	Description  *string    `json:"description,omitempty"`
 	Type         *string    `json:"type,omitempty"`
 	Size         *string    `json:"size,omitempty"`
-	Height       *int       `json:"height,omitempty"` // in millimeters
+	Height       *int       `json:"height,omitempty"`
 	Materials    *[]string  `json:"materials,omitempty"`
 	ReleaseDate  *time.Time `json:"release_date,omitempty"`
 	Manufacturer *string    `json:"manufacturer,omitempty"`
@@ -21,4 +21,5 @@ type Figure struct {
 	UpdatedAt    time.Time  `json:"updated_at"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
 	IsDraft      bool       `json:"is_draft"`
+	Images       []string   `json:"images"`
 }
