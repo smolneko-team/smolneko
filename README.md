@@ -4,15 +4,15 @@
 
 smolneko is an open-source project about anime and figures. 🌸
 
-This is the server side (backend) of the project. The website (frontend) is currently under development, stay tuned for updates.
+This is the **API** of the project. The [website](https://github.com/smolneko-team/smolneko) is currently under development, stay tuned for updates.
 
 ## Development status
 
-🚧 Currently work in progress 🚧
+🚧 **Currently work in progress** 🚧
 
-- Public API - now in active development.
-- Private СMS API (for administration and moderation) - in parallel with the development of a public API.
-- Frontend part and website - coming soon 👀
+- Public API — now in active development.
+- Private API — in parallel with the development of a public API.
+- Frontend part and website — coming soon 👀
 
 ## Contribute
 
