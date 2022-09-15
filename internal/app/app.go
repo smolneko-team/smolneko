@@ -16,7 +16,7 @@ import (
 
 func Run(cfg *config.Config) {
 
-	l := logger.New(cfg.Log.Level)
+	l := logger.New(cfg.Log.Level, cfg.App.StageStatus)
 
 	url := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
