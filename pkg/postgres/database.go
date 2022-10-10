@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 const (
@@ -36,7 +36,7 @@ func New(url string, opts ...Option) (*Postgres, error) {
 		opt(pg)
 	}
 
-	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
+	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar) // $1, $2, $3
 
 	poolConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
@@ -46,12 +46,12 @@ func New(url string, opts ...Option) (*Postgres, error) {
 	poolConfig.MaxConns = int32(pg.maxPoolSize)
 
 	for pg.connAttempts > 0 {
-		pg.Pool, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
+		pg.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
 		if err == nil {
 			break
 		}
 
-		log.Printf("Postgres is trying to connect, attempts left: %d", pg.connAttempts)
+		log.Printf("trying to connect Postgres, attempts left: %d", pg.connAttempts)
 
 		time.Sleep(pg.connTimeout)
 
@@ -65,6 +65,7 @@ func New(url string, opts ...Option) (*Postgres, error) {
 	return pg, nil
 }
 
+// Close closes all connections in the pool.
 func (p *Postgres) Close() {
 	if p.Pool != nil {
 		p.Pool.Close()
