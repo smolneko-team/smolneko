@@ -10,11 +10,11 @@ import (
 )
 
 type Interface interface {
-	Debug(message interface{}, args ...interface{})
-	Info(message string, args ...interface{})
-	Warn(message string, args ...interface{})
-	Error(message interface{}, args ...interface{})
-	Fatal(message interface{}, args ...interface{})
+	Debug(message any, args ...any)
+	Info(message string, args ...any)
+	Warn(message string, args ...any)
+	Error(message any, args ...any)
+	Fatal(message any, args ...any)
 }
 
 type Logger struct {
@@ -42,6 +42,8 @@ func New(level string, stage string) *Logger {
 	zerolog.SetGlobalLevel(globalLevel)
 
 	var logger zerolog.Logger
+
+	// is the number of stack frames to skip to find the caller
 	skipFrameCount := 3
 
 	if stage == "dev" {
@@ -49,7 +51,7 @@ func New(level string, stage string) *Logger {
 			Out:        os.Stdout,
 			TimeFormat: time.RFC3339,
 		}
-		output.FormatLevel = func(i interface{}) string {
+		output.FormatLevel = func(i any) string {
 			return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
 		}
 
@@ -62,7 +64,7 @@ func New(level string, stage string) *Logger {
 		logger = zerolog.New(os.Stdout).
 			With().
 			Timestamp().
-			CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + skipFrameCount).
+			CallerWithSkipFrameCount(zerolog.CallerSkipFrameCount + skipFrameCount). // 5
 			Logger()
 	}
 
@@ -71,27 +73,27 @@ func New(level string, stage string) *Logger {
 	}
 }
 
-func (l *Logger) Debug(message interface{}, args ...interface{}) {
+func (l *Logger) Debug(message any, args ...any) {
 	l.log("debug", message, args...)
 }
 
-func (l *Logger) Info(message string, args ...interface{}) {
+func (l *Logger) Info(message string, args ...any) {
 	l.log("info", message, args...)
 }
 
-func (l *Logger) Warn(message string, args ...interface{}) {
+func (l *Logger) Warn(message string, args ...any) {
 	l.log("warn", message, args...)
 }
 
-func (l *Logger) Error(message interface{}, args ...interface{}) {
+func (l *Logger) Error(message any, args ...any) {
 	l.log("error", message, args...)
 }
 
-func (l *Logger) Fatal(message interface{}, args ...interface{}) {
+func (l *Logger) Fatal(message any, args ...any) {
 	l.log("fatal", message, args...)
 }
 
-func (l *Logger) log(level, message interface{}, args ...interface{}) {
+func (l *Logger) log(level, message any, args ...any) {
 
 	msg := l.msgFmt(message)
 
@@ -124,7 +126,7 @@ func (l *Logger) log(level, message interface{}, args ...interface{}) {
 
 }
 
-func (l *Logger) msgFmt(message interface{}) string {
+func (l *Logger) msgFmt(message any) string {
 	switch msg := message.(type) {
 	case error:
 		return msg.Error()
