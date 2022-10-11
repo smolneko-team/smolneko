@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/smolneko-team/smolneko/internal/model"
 	"github.com/smolneko-team/smolneko/pkg/postgres"
 )
@@ -16,14 +17,13 @@ func NewCharactersRepo(pg *postgres.Postgres) *CharactersRepo {
 	return &CharactersRepo{pg}
 }
 
-func (r *CharactersRepo) GetCharacterById(ctx context.Context, id int) (model.Character, error) {
-
+func (r *CharactersRepo) GetCharacterById(ctx context.Context, id string) (model.Character, error) {
 	character := model.Character{}
 
 	sql, _, err := r.Builder.
 		Select("id, name, description, birth_at, created_at, updated_at, is_draft").
 		From("characters").
-		Where("id = $1").
+		Where(sq.Eq{"id": id}).
 		ToSql()
 
 	if err != nil {
@@ -35,7 +35,15 @@ func (r *CharactersRepo) GetCharacterById(ctx context.Context, id int) (model.Ch
 		return character, fmt.Errorf("CharactersRepo - GetCharacterById - r.Pool.QueryRow: %w", err)
 	}
 
-	err = row.Scan(&character.ID, &character.Name, &character.Description, &character.BirthAt, &character.CreatedAt, &character.UpdatedAt, &character.IsDraft)
+	err = row.Scan(
+		&character.ID,
+		&character.Name,
+		&character.Description,
+		&character.BirthAt,
+		&character.CreatedAt,
+		&character.UpdatedAt,
+		&character.IsDraft,
+	)
 	if err != nil {
 		return character, fmt.Errorf("CharactersRepo - GetCharacterById - row.Scan: %w", err)
 	}
@@ -43,39 +51,49 @@ func (r *CharactersRepo) GetCharacterById(ctx context.Context, id int) (model.Ch
 	return character, nil
 }
 
-func (r *CharactersRepo) GetCharacters(ctx context.Context, count int) ([]model.Character, error) {
+func (r *CharactersRepo) GetCharacters(ctx context.Context, count, offset int) ([]model.Character, error) {
 	if count > 50 {
 		count = 50
 	}
 
-	sql, _, err := r.Builder.
+	query := r.Builder.
 		Select("id, name, description, birth_at, created_at, updated_at, is_draft").
 		From("characters").
+		OrderBy("created_at ASC").
 		Limit(uint64(count)).
-		ToSql()
+		Offset(uint64(offset))
 
+	sql, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("CharactersRepo - GetCharacters - r.Builder: %w", err)
 	}
 
-	rows, err := r.Pool.Query(ctx, sql)
+	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("CharactersRepo - GetCharacters - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
-	entities := make([]model.Character, 0, _defaultEntityCap)
+	characters := make([]model.Character, 0, _defaultEntityCap)
 
 	for rows.Next() {
-		e := model.Character{}
+		character := model.Character{}
 
-		err = rows.Scan(&e.ID, &e.Name, &e.CreatedAt, &e.UpdatedAt, &e.IsDraft)
+		err = rows.Scan(
+			&character.ID,
+			&character.Name,
+			&character.Description,
+			&character.BirthAt,
+			&character.CreatedAt,
+			&character.UpdatedAt,
+			&character.IsDraft,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("CharactersRepo - GetCharacters - rows.Scan: %w", err)
 		}
 
-		entities = append(entities, e)
+		characters = append(characters, character)
 	}
 
-	return entities, nil
+	return characters, nil
 }

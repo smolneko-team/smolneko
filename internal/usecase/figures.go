@@ -17,8 +17,8 @@ func NewFigures(r FiguresRepo) *FiguresUseCase {
 	}
 }
 
-func (uc FiguresUseCase) Figures(ctx context.Context, count int) ([]model.Figure, error) {
-	figures, err := uc.repo.GetFigures(ctx, count)
+func (uc FiguresUseCase) Figures(ctx context.Context, count int, offset int) ([]model.Figure, error) {
+	figures, err := uc.repo.GetFigures(ctx, count, offset)
 	if err != nil {
 		return nil, fmt.Errorf("FiguresUseCase - Figures - f.repo.GetFigures: %w", err)
 	}
@@ -26,7 +26,7 @@ func (uc FiguresUseCase) Figures(ctx context.Context, count int) ([]model.Figure
 	return figures, nil
 }
 
-func (uc FiguresUseCase) Figure(ctx context.Context, id int) (model.Figure, error) {
+func (uc FiguresUseCase) Figure(ctx context.Context, id string) (model.Figure, error) {
 	figure, err := uc.repo.GetFigureById(ctx, id)
 	if err != nil {
 		return figure, fmt.Errorf("FiguresUseCase - Figure - f.repo.GetFigure: %w", err)
