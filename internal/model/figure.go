@@ -5,7 +5,7 @@ import (
 )
 
 type Figure struct {
-	ID           int        `json:"id"`
+	ID           string     `json:"id"`
 	CharacterID  *int       `json:"character_id,omitempty"`
 	Name         string     `json:"name"`
 	Description  *string    `json:"description,omitempty"`
@@ -21,5 +21,4 @@ type Figure struct {
 	UpdatedAt    time.Time  `json:"updated_at"`
 	DeletedAt    *time.Time `json:"deleted_at,omitempty"`
 	IsDraft      bool       `json:"is_draft"`
-	Images       []string   `json:"images"`
 }

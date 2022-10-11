@@ -1,9 +1,11 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Character struct {
-	ID          int        `json:"id"`
+	ID          string     `json:"id"`
 	Name        string     `json:"name"`
 	Description *string    `json:"description,omitempty"`
 	BirthAt     *time.Time `json:"birth_at,omitempty"`
