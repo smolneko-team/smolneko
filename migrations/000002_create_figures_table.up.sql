@@ -11,6 +11,8 @@ CREATE TABLE
         PRIMARY KEY (id)
     );
 
+CREATE INDEX idx_characters_pagination ON characters(created_at, id);
+
 CREATE TABLE
     IF NOT EXISTS figures (
         id char(21) DEFAULT nanoid(),
@@ -33,6 +35,8 @@ CREATE TABLE
         CONSTRAINT fk_characters FOREIGN KEY (character_id) REFERENCES characters (id)
     );
 
+CREATE INDEX idx_figures_pagination ON figures(created_at, id);
+
 CREATE TABLE
     IF NOT EXISTS figures_images (
         id char(21) DEFAULT nanoid(),
@@ -41,7 +45,7 @@ CREATE TABLE
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         PRIMARY KEY (id),
-        CONSTRAINT fk_figures FOREIGN KEY (figure_id) REFERENCES figures (id)
+        CONSTRAINT fk_figures_images FOREIGN KEY (figure_id) REFERENCES figures (id)
     );
 
 CREATE TABLE
@@ -52,5 +56,5 @@ CREATE TABLE
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         PRIMARY KEY (id),
-        CONSTRAINT fk_characters FOREIGN KEY (character_id) REFERENCES characters (id)
+        CONSTRAINT fk_characters_images FOREIGN KEY (character_id) REFERENCES characters (id)
     );
