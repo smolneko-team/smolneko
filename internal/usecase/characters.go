@@ -17,13 +17,13 @@ func NewCharacters(r CharactersRepo) *CharactersUseCase {
 	}
 }
 
-func (uc CharactersUseCase) Characters(ctx context.Context, count, offset int) ([]model.Character, error) {
-	characters, err := uc.repo.GetCharacters(ctx, count, offset)
+func (uc CharactersUseCase) Characters(ctx context.Context, count int, cursor string) ([]model.Character, string, error) {
+	characters, next, err := uc.repo.GetCharacters(ctx, count, cursor)
 	if err != nil {
-		return nil, fmt.Errorf("CharactersUseCase - Characters - f.repo.GetCharacters: %w", err)
+		return nil, "", fmt.Errorf("CharactersUseCase - Characters - f.repo.GetCharacters: %w", err)
 	}
 
-	return characters, nil
+	return characters, next, nil
 }
 
 func (uc CharactersUseCase) Character(ctx context.Context, id string) (model.Character, error) {

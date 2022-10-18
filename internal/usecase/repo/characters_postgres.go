@@ -51,7 +51,7 @@ func (r *CharactersRepo) GetCharacterById(ctx context.Context, id string) (model
 	return character, nil
 }
 
-func (r *CharactersRepo) GetCharacters(ctx context.Context, count, offset int) ([]model.Character, error) {
+func (r *CharactersRepo) GetCharacters(ctx context.Context, count int, cursor string) ([]model.Character, string, error) {
 	if count > 50 {
 		count = 50
 	}
@@ -59,18 +59,37 @@ func (r *CharactersRepo) GetCharacters(ctx context.Context, count, offset int) (
 	query := r.Builder.
 		Select("id, name, description, birth_at, created_at, updated_at, is_draft").
 		From("characters").
-		OrderBy("created_at ASC").
-		Limit(uint64(count)).
-		Offset(uint64(offset))
+		OrderBy("created_at DESC, id DESC").
+		Limit(uint64(count))
+
+	if cursor != "" {
+		created, id, err := decodeCursor(cursor)
+		if err != nil {
+			return nil, "", fmt.Errorf("CharactersRepo - GetCharacters - decodeCursor : %w", err)
+		}
+
+		query = query.Where(sq.LtOrEq{
+			"created_at": created,
+		})
+
+		query = query.Where(sq.Or{
+			sq.Lt{
+				"created_at": created,
+			},
+			sq.Lt{
+				"id": id,
+			},
+		})
+	}
 
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("CharactersRepo - GetCharacters - r.Builder: %w", err)
+		return nil, "", fmt.Errorf("CharactersRepo - GetCharacters - r.Builder: %w", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("CharactersRepo - GetCharacters - r.Pool.Query: %w", err)
+		return nil, "", fmt.Errorf("CharactersRepo - GetCharacters - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
@@ -81,7 +100,6 @@ func (r *CharactersRepo) GetCharacters(ctx context.Context, count, offset int) (
 
 		err = rows.Scan(
 			&character.ID,
-			&character.Name,
 			&character.Description,
 			&character.BirthAt,
 			&character.CreatedAt,
@@ -89,11 +107,16 @@ func (r *CharactersRepo) GetCharacters(ctx context.Context, count, offset int) (
 			&character.IsDraft,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("CharactersRepo - GetCharacters - rows.Scan: %w", err)
+			return nil, "", fmt.Errorf("CharactersRepo - GetCharacters - rows.Scan: %w", err)
 		}
 
 		characters = append(characters, character)
 	}
 
-	return characters, nil
+	var nextCursor string
+	if len(characters) > 0 {
+		nextCursor = encodeCursor(characters[len(characters)-1].CreatedAt, characters[len(characters)-1].ID)
+	}
+
+	return characters, nextCursor, nil
 }

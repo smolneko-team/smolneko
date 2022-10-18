@@ -28,6 +28,7 @@ func newCharactersRoutes(handler fiber.Router, c usecase.Character, l logger.Int
 
 type charactersResponse struct {
 	Characters []model.Character `json:"data"`
+	NextCursor string            `json:"next_cursor"`
 }
 
 func (r *charactersRoutes) characters(c *fiber.Ctx) error {
@@ -46,24 +47,14 @@ func (r *charactersRoutes) characters(c *fiber.Ctx) error {
 		return errorResponse(c, fiber.StatusBadRequest, "Query parameter 'count' is negative or zero.")
 	}
 
-	var offset int
-	if c.Query("offset") == "" {
-		offset = 0
-	} else if value, err := strconv.Atoi(c.Query("offset")); err == nil {
-		offset = value
-	} else {
-		r.l.Error(err, "http - v1 - count")
-		return errorResponse(c, fiber.StatusBadRequest, "Query parameter 'offset' is not an integer.")
-	}
-
-	characters, err := r.c.Characters(c.UserContext(), count, offset)
+	cursor := c.Query("cursor")
+	characters, next, err := r.c.Characters(c.UserContext(), count, cursor)
 	if err != nil {
 		r.l.Error(err, "http - v1 - figures")
-
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(charactersResponse{characters})
+	return c.Status(fiber.StatusOK).JSON(charactersResponse{characters, next})
 }
 
 type characterResponse struct {

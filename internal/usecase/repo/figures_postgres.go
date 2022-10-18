@@ -55,7 +55,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 	return figure, nil
 }
 
-func (r *FiguresRepo) GetFigures(ctx context.Context, count int, offset int) ([]model.Figure, error) {
+func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) ([]model.Figure, string, error) {
 	if count > 50 {
 		count = 50
 	}
@@ -63,18 +63,37 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, offset int) ([]
 	query := r.Builder.
 		Select("id, character_id, name, description, type, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_draft").
 		From("figures").
-		OrderBy("created_at ASC").
-		Limit(uint64(count)).
-		Offset(uint64(offset))
+		OrderBy("created_at DESC, id DESC").
+		Limit(uint64(count))
+
+	if cursor != "" {
+		created, id, err := decodeCursor(cursor)
+		if err != nil {
+			return nil, "", fmt.Errorf("FiguresRepo - GetFigures - decodeCursor : %w", err)
+		}
+
+		query = query.Where(sq.LtOrEq{
+			"created_at": created,
+		})
+
+		query = query.Where(sq.Or{
+			sq.Lt{
+				"created_at": created,
+			},
+			sq.Lt{
+				"id": id,
+			},
+		})
+	}
 
 	sql, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("FiguresRepo - GetFigures - r.Builder: %w", err)
+		return nil, "", fmt.Errorf("FiguresRepo - GetFigures - r.Builder: %w", err)
 	}
 
 	rows, err := r.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("FiguresRepo - GetFigures - r.Pool.Query: %w", err)
+		return nil, "", fmt.Errorf("FiguresRepo - GetFigures - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
@@ -101,11 +120,16 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, offset int) ([]
 			&figure.IsDraft,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("FiguresRepo - GetFigures - rows.Scan: %w", err)
+			return nil, "", fmt.Errorf("FiguresRepo - GetFigures - rows.Scan: %w", err)
 		}
 
 		figures = append(figures, figure)
 	}
 
-	return figures, nil
+	var nextCursor string
+	if len(figures) > 0 {
+		nextCursor = encodeCursor(figures[len(figures)-1].CreatedAt, figures[len(figures)-1].ID)
+	}
+
+	return figures, nextCursor, nil
 }
