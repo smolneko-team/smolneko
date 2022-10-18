@@ -100,6 +100,7 @@ func (r *CharactersRepo) GetCharacters(ctx context.Context, count int, cursor st
 
 		err = rows.Scan(
 			&character.ID,
+			&character.Name,
 			&character.Description,
 			&character.BirthAt,
 			&character.CreatedAt,
