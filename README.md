@@ -10,8 +10,7 @@ This is the **API** of the project. The [website](https://github.com/smolneko-te
 
 🚧 **Currently work in progress** 🚧
 
-- Public API — now in active development.
-- Private API — in parallel with the development of a public API.
+- API — now in active development.
 - Frontend part and website — coming soon 👀
 
 ## Contribute
