@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:14.5
+    environment:
+      - POSTGRES_DB=smolneko
+      - POSTGRES_USER=smol
+      - POSTGRES_PASSWORD=neko
+    volumes:
+      - pg-smol:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  smolneko:
+    build: .
+    container_name: smolneko
+    image: smolneko
+    environment:
+      - PG_URL=postgres://smol:neko@postgres:5432/smolneko
+      - STAGE_STATUS=dev
+    ports:
+      - "3120:3120"
+    depends_on:
+      - postgres
+
+volumes:
+  pg-smol:
