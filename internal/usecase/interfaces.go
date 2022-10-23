@@ -26,4 +26,12 @@ type (
 		GetCharacters(context.Context, int, string) ([]model.Character, string, error)
 		GetCharacterById(context.Context, string) (model.Character, error)
 	}
+
+	Images interface {
+		Images(context.Context, string, string) (model.Image, error)
+	}
+
+	ImagesRepo interface {
+		GetImagesPathById(context.Context, string, string) (model.Image, error)
+	}
 )

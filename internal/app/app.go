@@ -36,8 +36,9 @@ func Run(cfg *config.Config) {
 
 	figuresUseCase := usecase.NewFigures(repo.NewFiguresRepo(pg))
 	charactersUseCase := usecase.NewCharacters(repo.NewCharactersRepo(pg))
+	imagesUseCase := usecase.NewImages(repo.NewImagesRepo(pg))
 
 	handler := fiber.New(httpserver.FiberConfig(cfg.StageStatus))
-	v1.NewRouter(handler, l, figuresUseCase, charactersUseCase)
+	v1.NewRouter(handler, l, figuresUseCase, charactersUseCase, imagesUseCase)
 	httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 }

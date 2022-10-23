@@ -12,17 +12,19 @@ import (
 )
 
 type figuresRoutes struct {
-	f usecase.Figure
-	l logger.Interface
+	f   usecase.Figure
+	img usecase.Images
+	l   logger.Interface
 }
 
-func newFiguresRoutes(handler fiber.Router, f usecase.Figure, l logger.Interface) {
-	r := &figuresRoutes{f, l}
+func newFiguresRoutes(handler fiber.Router, f usecase.Figure, img usecase.Images, l logger.Interface) {
+	r := &figuresRoutes{f, img, l}
 
 	h := handler.Group("/figures")
 	{
 		h.Get("/", r.figures)
 		h.Get("/:id", r.figure)
+		h.Get("/:id/images", r.figureImages)
 	}
 }
 
@@ -75,4 +77,20 @@ func (r *figuresRoutes) figure(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(figureResponse{figure})
+}
+
+func (r *figuresRoutes) figureImages(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if _, err := strconv.Atoi(id); err == nil {
+		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - id")
+		return errorResponse(c, fiber.StatusBadRequest, "Route parameter 'id' is not a valid id.")
+	}
+
+	images, err := r.img.Images(c.UserContext(), id, "figures")
+	if err != nil {
+		r.l.Error(err, "http - v1 - figure")
+		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
+	}
+
+	return c.Status(fiber.StatusOK).JSON(imagesResponse{images})
 }

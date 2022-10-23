@@ -11,7 +11,7 @@ import (
 	fRecover "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
-func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure, c usecase.Character) {
+func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure, c usecase.Character, img usecase.Images) {
 	prometheus := prom.New("smolneko")
 	prometheus.RegisterAt(app, "/metrics")
 
@@ -28,7 +28,7 @@ func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure, c usecase.C
 
 	h := app.Group("/v1")
 	{
-		newFiguresRoutes(h, f, l)
-		newCharactersRoutes(h, c, l)
+		newFiguresRoutes(h, f, img, l)
+		newCharactersRoutes(h, c, img, l)
 	}
 }
