@@ -34,12 +34,10 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	// TODO Use cases here
 	figuresUseCase := usecase.NewFigures(repo.NewFiguresRepo(pg))
 	charactersUseCase := usecase.NewCharacters(repo.NewCharactersRepo(pg))
 
-	// TODO HTTP Server
-	handler := fiber.New(httpserver.FiberConfig())
+	handler := fiber.New(httpserver.FiberConfig(cfg.StageStatus))
 	v1.NewRouter(handler, l, figuresUseCase, charactersUseCase)
 	httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 }

@@ -21,11 +21,22 @@ type Server struct {
 	port   string
 }
 
-func FiberConfig() fiber.Config {
-	return fiber.Config{
-		ReadTimeout:  _defaultReadTimeout,
-		WriteTimeout: _defaultWriteTimeout,
+func FiberConfig(status string) fiber.Config {
+	config := fiber.Config{
+		AppName:               "smolneko",
+		DisableStartupMessage: true,
+		EnablePrintRoutes:     false,
+		ReadTimeout:           _defaultReadTimeout,
+		WriteTimeout:          _defaultWriteTimeout,
+		IdleTimeout:           60 * time.Second,
 	}
+
+	if status == "dev" {
+		config.DisableStartupMessage = false
+		config.EnablePrintRoutes = true
+	}
+
+	return config
 }
 
 func New(app *fiber.App, opts ...Option) *Server {
@@ -39,8 +50,6 @@ func New(app *fiber.App, opts ...Option) *Server {
 		opt(s)
 	}
 
-	// TODO start simple server without graceful shutdown for dev purposes (stage status env)
-
 	s.start()
 
 	return s
@@ -48,7 +57,7 @@ func New(app *fiber.App, opts ...Option) *Server {
 func (s *Server) start() {
 	idleConnsClosed := make(chan struct{})
 
-	// TODO Graceful Shutdown ?
+	// TODO Graceful Shutdown
 	go func() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
