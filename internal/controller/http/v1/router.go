@@ -1,6 +1,7 @@
 package v1
 
 import (
+	prom "github.com/ansrivas/fiberprometheus/v2"
 	"github.com/smolneko-team/smolneko/internal/usecase"
 	"github.com/smolneko-team/smolneko/pkg/logger"
 
@@ -11,29 +12,15 @@ import (
 )
 
 func NewRouter(app *fiber.App, l logger.Interface, f usecase.Figure, c usecase.Character) {
-	// TODO Config middlewares
+	prometheus := prom.New("smolneko")
+	prometheus.RegisterAt(app, "/metrics")
+
 	app.Use(
 		fRecover.New(),
-		cors.New(),
-		fLogger.New(),
-		// limiter.New(limiter.Config{
-		// 	Next: func(c *fiber.Ctx) bool {
-		// 		return c.IP() == "127.0.0.1"
-		// 	},
-		// 	Max: 240,
-		// 	KeyGenerator: func(c *fiber.Ctx) string {
-		// 		// return c.Get("x-forwarded-for")
-		// 		return c.IP()
-		// 	},
-		// 	LimitReached: func(c *fiber.Ctx) error {
-		// 		return c.SendStatus(fiber.StatusTooManyRequests)
-		// 	},
-		// 	Expiration:        30 * time.Second,
-		// 	LimiterMiddleware: limiter.SlidingWindow{},
-		// }),
+		cors.New(cors.ConfigDefault),
+		fLogger.New(fLogger.ConfigDefault),
+		prometheus.Middleware,
 	)
-
-	// app.Get("/dashboard", monitor.New())
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusOK)
