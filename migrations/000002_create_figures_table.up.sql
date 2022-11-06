@@ -18,8 +18,10 @@ CREATE TABLE
         id char(21) DEFAULT nanoid(),
         character_id char(21),
         name VARCHAR(255) NOT NULL,
+        preview_image VARCHAR(255) NOT NULL,
         description jsonb,
         type VARCHAR(255),
+        version VARCHAR(255),
         size VARCHAR(30),
         height SMALLINT,
         materials VARCHAR(100) [],
@@ -30,6 +32,7 @@ CREATE TABLE
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         deleted_at TIMESTAMPTZ,
+        is_nsfw BOOLEAN NOT NULL DEFAULT false,
         is_draft BOOLEAN NOT NULL DEFAULT false,
         PRIMARY KEY (id),
         CONSTRAINT fk_characters FOREIGN KEY (character_id) REFERENCES characters (id)

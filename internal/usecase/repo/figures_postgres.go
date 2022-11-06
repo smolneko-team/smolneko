@@ -21,7 +21,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 	figure := model.Figure{}
 
 	sql, args, err := r.Builder.
-		Select("id, character_id, name, description, type, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_draft").
+		Select("id, character_id, name, preview_image, description, type, version, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_nsfw, is_draft").
 		From("figures").
 		Where(sq.Eq{"id": id}).
 		ToSql()
@@ -35,8 +35,10 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 		&figure.ID,
 		&figure.CharacterID,
 		&figure.Name,
+		&figure.PreviewImage,
 		&figure.Description,
 		&figure.Type,
+		&figure.Version,
 		&figure.Size,
 		&figure.Height,
 		&figure.Materials,
@@ -46,6 +48,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 		&figure.Price,
 		&figure.CreatedAt,
 		&figure.UpdatedAt,
+		&figure.IsNSFW,
 		&figure.IsDraft,
 	)
 	if err != nil {
@@ -61,7 +64,7 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 	}
 
 	query := r.Builder.
-		Select("id, character_id, name, description, type, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_draft").
+		Select("id, character_id, name, preview_image, description, type, version, size, height, materials, release_date, manufacturer, links, price, created_at, updated_at, is_nsfw, is_draft").
 		From("figures").
 		OrderBy("created_at DESC, id DESC").
 		Limit(uint64(count))
@@ -106,8 +109,10 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 			&figure.ID,
 			&figure.CharacterID,
 			&figure.Name,
+			&figure.PreviewImage,
 			&figure.Description,
 			&figure.Type,
+			&figure.Version,
 			&figure.Size,
 			&figure.Height,
 			&figure.Materials,
@@ -117,6 +122,7 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 			&figure.Price,
 			&figure.CreatedAt,
 			&figure.UpdatedAt,
+			&figure.IsNSFW,
 			&figure.IsDraft,
 		)
 		if err != nil {
