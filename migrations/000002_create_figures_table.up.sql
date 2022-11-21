@@ -18,7 +18,6 @@ CREATE TABLE
         id char(21) DEFAULT nanoid(),
         character_id char(21),
         name VARCHAR(255) NOT NULL,
-        preview_image VARCHAR(255) NOT NULL,
         description jsonb,
         type VARCHAR(255),
         version VARCHAR(255),
@@ -43,21 +42,29 @@ CREATE INDEX idx_figures_pagination ON figures(created_at, id);
 CREATE TABLE
     IF NOT EXISTS figures_images (
         id char(21) DEFAULT nanoid(),
-        path VARCHAR(255) [] NOT NULL,
-        figure_id char(21) UNIQUE NOT NULL,
+        image_path VARCHAR(255) NOT NULL,
+        blurhash VARCHAR(100) NOT NULL,
+        preview BOOLEAN NOT NULL DEFAULT false,
+        figure_id char(21) NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         PRIMARY KEY (id),
         CONSTRAINT fk_figures_images FOREIGN KEY (figure_id) REFERENCES figures (id)
     );
 
+CREATE INDEX idx_fig_id_img ON figures_images(figure_id);
+
 CREATE TABLE
     IF NOT EXISTS characters_images (
         id char(21) DEFAULT nanoid(),
-        path VARCHAR(255) [] NOT NULL,
-        character_id char(21) UNIQUE NOT NULL,
+        image_path VARCHAR(255) NOT NULL,
+        blurhash VARCHAR(100) NOT NULL,
+        preview BOOLEAN NOT NULL DEFAULT false,
+        character_id char(21) NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT current_timestamp(0),
         PRIMARY KEY (id),
         CONSTRAINT fk_characters_images FOREIGN KEY (character_id) REFERENCES characters (id)
     );
+
+CREATE INDEX idx_char_id_img ON characters_images(character_id);
