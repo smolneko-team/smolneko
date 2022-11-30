@@ -8,22 +8,22 @@ import (
 
 type (
 	Figure interface {
-		Figures(context.Context, int, string) ([]model.Figure, string, error)
+		Figures(context.Context, int, string) ([]model.Figure, string, string, error)
 		Figure(context.Context, string) (model.Figure, error)
 	}
 
 	FiguresRepo interface {
-		GetFigures(context.Context, int, string) ([]model.Figure, string, error)
+		GetFigures(context.Context, int, string) ([]model.Figure, string, string, error)
 		GetFigureById(context.Context, string) (model.Figure, error)
 	}
 
 	Character interface {
-		Characters(context.Context, int, string) ([]model.Character, string, error)
+		Characters(context.Context, int, string) ([]model.Character, string, string, error)
 		Character(context.Context, string) (model.Character, error)
 	}
 
 	CharactersRepo interface {
-		GetCharacters(context.Context, int, string) ([]model.Character, string, error)
+		GetCharacters(context.Context, int, string) ([]model.Character, string, string, error)
 		GetCharacterById(context.Context, string) (model.Character, error)
 	}
 

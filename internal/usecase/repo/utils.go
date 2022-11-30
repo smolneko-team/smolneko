@@ -10,14 +10,14 @@ import (
 
 const _defaultEntityCap = 50
 
-func decodeCursor(cursor string) (t time.Time, id string, err error) {
+func decodeCursor(cursor string) (t time.Time, id, suffix string, err error) {
 	decoded, err := base64.URLEncoding.DecodeString(cursor)
 	if err != nil {
 		return
 	}
 
 	splited := strings.Split(string(decoded), ",")
-	if len(splited) != 2 {
+	if len(splited) != 3 {
 		err = errors.New("cursor is invalid")
 		return
 	}
@@ -28,10 +28,11 @@ func decodeCursor(cursor string) (t time.Time, id string, err error) {
 	}
 
 	id = splited[1]
+	suffix = splited[2]
 	return
 }
 
-func encodeCursor(t time.Time, id string) string {
-	cursor := fmt.Sprintf("%s,%s", t.Format(time.RFC3339), id)
+func encodeCursor(t time.Time, id, suffix string) string {
+	cursor := fmt.Sprintf("%s,%s,%s", t.Format(time.RFC3339), id, suffix)
 	return base64.URLEncoding.EncodeToString([]byte(cursor))
 }

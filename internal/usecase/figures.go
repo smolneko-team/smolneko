@@ -17,13 +17,13 @@ func NewFigures(r FiguresRepo) *FiguresUseCase {
 	}
 }
 
-func (uc FiguresUseCase) Figures(ctx context.Context, count int, cursor string) ([]model.Figure, string, error) {
-	figures, next, err := uc.repo.GetFigures(ctx, count, cursor)
+func (uc FiguresUseCase) Figures(ctx context.Context, count int, cursor string) ([]model.Figure, string, string, error) {
+	figures, next, prev, err := uc.repo.GetFigures(ctx, count, cursor)
 	if err != nil {
-		return nil, "", fmt.Errorf("FiguresUseCase - Figures - f.repo.GetFigures: %w", err)
+		return nil, "", "", fmt.Errorf("FiguresUseCase - Figures - f.repo.GetFigures: %w", err)
 	}
 
-	return figures, next, nil
+	return figures, next, prev, nil
 }
 
 func (uc FiguresUseCase) Figure(ctx context.Context, id string) (model.Figure, error) {

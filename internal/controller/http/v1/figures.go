@@ -30,7 +30,8 @@ func newFiguresRoutes(handler fiber.Router, f usecase.Figure, img usecase.Images
 
 type figuresResponse struct {
 	Figures    []model.Figure `json:"data"`
-	NextCursor string         `json:"next_cursor"`
+	PrevCursor string         `json:"previous_cursor,omitempty"`
+	NextCursor string         `json:"next_cursor,omitempty"`
 }
 
 func (r *figuresRoutes) figures(c *fiber.Ctx) error {
@@ -41,22 +42,22 @@ func (r *figuresRoutes) figures(c *fiber.Ctx) error {
 	} else if value, err := strconv.Atoi(c.Query("count")); err == nil {
 		count = value
 	} else {
-		r.l.Error(err, "http - v1 - count")
+		r.l.Error(err, "http - v1 - figures - count")
 		return errorResponse(c, fiber.StatusBadRequest, "Query parameter 'count' is not an integer.")
 	}
 	if count <= 0 {
-		r.l.Error("count is negative or zero", count, "http - v1 - count")
+		r.l.Error("count is negative or zero", count, "http - v1 - figures - count")
 		return errorResponse(c, fiber.StatusBadRequest, "Query parameter 'count' is negative or zero.")
 	}
 
 	cursor := c.Query("cursor")
-	figures, next, err := r.f.Figures(c.UserContext(), count, cursor)
+	figures, next, prev, err := r.f.Figures(c.UserContext(), count, cursor)
 	if err != nil {
 		r.l.Error(err, "http - v1 - figures")
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(figuresResponse{figures, next})
+	return c.Status(fiber.StatusOK).JSON(figuresResponse{figures, prev, next})
 }
 
 type figureResponse struct {
@@ -66,7 +67,7 @@ type figureResponse struct {
 func (r *figuresRoutes) figure(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if _, err := strconv.Atoi(id); err == nil {
-		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - id")
+		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - figure - id")
 		return errorResponse(c, fiber.StatusBadRequest, "Route parameter 'id' is not a valid id.")
 	}
 
