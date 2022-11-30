@@ -1,0 +1,26 @@
+app:
+  name: "smolneko"
+  version: '0.1.0'
+  stage_status: 'dev'
+
+http:
+  port: '3120'
+
+logger:
+  log_level: 'debug'
+
+postgres:
+  user: 'smol'
+  password: 'neko'
+  host: 'postgres'
+  port: 5432
+  name: 'smolneko'
+  ssl_mode: 'disable'
+  pg_pool_max: 1
+
+storage:
+  img_key: '822d1b6d2bbec9414fa959954107c96d310249bb38cb9669585b1b721aa40a708d264a64d1863dbba048ce954d12ec967ce1d927cdd03a0e417068d6c2de5860'
+  img_salt: '00e569c72661963f8e083bf6691f8aa632248848d48f3db84af7f58025500c2515f9663cbc846b1ace85fcfb0954a2ca4e7c41dbcea01f2e39ca001ce42c9296'
+  bucket: 'test'
+  img_url: 'http://localhost:8080'
+  proc_opts: ' '
