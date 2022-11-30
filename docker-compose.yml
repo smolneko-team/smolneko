@@ -3,7 +3,7 @@ version: '3'
 services:
   postgres:
     container_name: postgres
-    image: postgres:14.5
+    image: postgres:15.1-alpine
     environment:
       - POSTGRES_DB=smolneko
       - POSTGRES_USER=smol
@@ -12,18 +12,60 @@ services:
       - pg-smol:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    restart: unless-stopped
+
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    container_name: imgproxy
+    environment:
+#       Generate a random key/salt pair -
+#       echo $(xxd -g 2 -l 64 -p /dev/random | tr -d '\n')
+      - IMGPROXY_KEY=822d1b6d2bbec9414fa959954107c96d310249bb38cb9669585b1b721aa40a708d264a64d1863dbba048ce954d12ec967ce1d927cdd03a0e417068d6c2de5860
+      - IMGPROXY_SALT=00e569c72661963f8e083bf6691f8aa632248848d48f3db84af7f58025500c2515f9663cbc846b1ace85fcfb0954a2ca4e7c41dbcea01f2e39ca001ce42c9296
+      - IMGPROXY_USE_ETAG=true
+      - IMGPROXY_STRIP_METADATA=true
+      - IMGPROXY_ENABLE_WEBP_DETECTION=true
+      - IMGPROXY_ENABLE_AVIF_DETECTION=true
+#       S3 config
+#      - IMGPROXY_USE_S3=false
+#      - IMGPROXY_S3_REGION=us-west-1
+#      - IMGPROXY_S3_ENDPOINT=https://s3.example.com
+#      - AWS_ACCESS_KEY_ID=smol
+#      - AWS_SECRET_ACCESS_KEY=neko
+#       Logs and debug
+      - IMGPROXY_LOG_LEVEL=debug
+      - IMGPROXY_ENABLE_DEBUG_HEADERS=true
+      - IMGPROXY_DEVELOPMENT_ERRORS_MODE=true
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+       test: [ "CMD", "imgproxy", "health" ]
+       timeout: 10s
+       interval: 60s
+       retries: 3
 
   smolneko:
     build: .
     container_name: smolneko
     image: smolneko
     environment:
-      - PG_URL=postgres://smol:neko@postgres:5432/smolneko
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=smol
+      - DB_PASSWORD=neko
+      - DB_NAME=smolneko
+      - DB_SSL_MODE=disable
+      - DB_POOL_MAX=1
       - STAGE_STATUS=dev
+      - HTTP_PORT=3120
+      - LOG_LEVEL=debug
     ports:
       - "3120:3120"
     depends_on:
       - postgres
+      - imgproxy
+    restart: unless-stopped
 
 volumes:
   pg-smol:
