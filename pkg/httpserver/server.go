@@ -13,7 +13,7 @@ import (
 const (
 	_defaultReadTimeout  = 5 * time.Second
 	_defaultWriteTimeout = 5 * time.Second
-	_defaultAddr         = ":80"
+	_defaultAddr         = ":3120"
 )
 
 type Server struct {
@@ -21,9 +21,9 @@ type Server struct {
 	port   string
 }
 
-func FiberConfig(status string) fiber.Config {
+func FiberConfig(status, appName string) fiber.Config {
 	config := fiber.Config{
-		AppName:               "smolneko",
+		AppName:               appName,
 		DisableStartupMessage: true,
 		EnablePrintRoutes:     false,
 		ReadTimeout:           _defaultReadTimeout,
@@ -40,7 +40,6 @@ func FiberConfig(status string) fiber.Config {
 }
 
 func New(app *fiber.App, opts ...Option) *Server {
-
 	s := &Server{
 		server: app,
 		port:   _defaultAddr,
@@ -71,7 +70,6 @@ func (s *Server) start() {
 	}()
 
 	// Run server
-	// TODO TLS ?
 	if err := s.server.Listen(s.port); err != nil {
 		fmt.Errorf("server listen %w", err)
 	}
