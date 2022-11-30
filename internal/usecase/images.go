@@ -17,10 +17,10 @@ func NewImages(r ImagesRepo) *ImagesUseCase {
 	}
 }
 
-func (uc ImagesUseCase) Images(ctx context.Context, id, entity string) (model.Image, error) {
-	images, err := uc.repo.GetImagesPathById(ctx, id, entity)
+func (uc ImagesUseCase) Images(ctx context.Context, id, entity, preview string) ([]model.Image, error) {
+	images, err := uc.repo.GetImagesPathByEntityId(ctx, id, entity, preview)
 	if err != nil {
-		return images, fmt.Errorf("ImagesUseCase - Image - uc.repo.GetImagesPathById: %w", err)
+		return images, fmt.Errorf("ImagesUseCase - Image - uc.repo.GetImagesPathByEntityId: %w", err)
 	}
 
 	return images, nil

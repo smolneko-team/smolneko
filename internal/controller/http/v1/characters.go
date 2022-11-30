@@ -83,15 +83,17 @@ func (r *charactersRoutes) character(c *fiber.Ctx) error {
 func (r *charactersRoutes) characterImages(c *fiber.Ctx) error {
 	id := c.Params("id")
 	if _, err := strconv.Atoi(id); err == nil {
-		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - id")
+		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - characterImages - id")
 		return errorResponse(c, fiber.StatusBadRequest, "Route parameter 'id' is not a valid id.")
 	}
 
-	images, err := r.img.Images(c.UserContext(), id, "characters")
+	preview := c.Query("preview")
+	images, err := r.img.Images(c.UserContext(), id, "characters", preview)
 	if err != nil {
-		r.l.Error(err, "http - v1 - figure")
+		r.l.Error(err, "http - v1 - characterImages")
 		return errorResponse(c, fiber.StatusInternalServerError, "Internal server error")
 	}
+	count := len(images)
 
-	return c.Status(fiber.StatusOK).JSON(imagesResponse{images})
+	return c.Status(fiber.StatusOK).JSON(imagesResponse{count, images})
 }

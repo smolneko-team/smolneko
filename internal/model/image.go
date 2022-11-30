@@ -1,7 +1,7 @@
 package model
 
 type Image struct {
-	ID    string   `json:"id"`
-	Count int      `json:"count"`
-	URL   []string `json:"urls"`
+	BlurHash  string `json:"blurhash"`
+	URL       string `json:"urls"`
+	IsPreview bool   `json:"is_preview,omitempty"`
 }

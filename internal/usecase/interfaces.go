@@ -28,10 +28,10 @@ type (
 	}
 
 	Images interface {
-		Images(context.Context, string, string) (model.Image, error)
+		Images(context.Context, string, string, string) ([]model.Image, error)
 	}
 
 	ImagesRepo interface {
-		GetImagesPathById(context.Context, string, string) (model.Image, error)
+		GetImagesPathByEntityId(context.Context, string, string, string) ([]model.Image, error)
 	}
 )
