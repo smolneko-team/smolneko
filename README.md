@@ -2,9 +2,9 @@
 
 [![License](https://img.shields.io/github/license/smolneko-team/smolneko)](https://github.com/smolneko-team/smolneko/blob/main/LICENSE) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/smolneko-team/smolneko)
 
-smolneko is an open-source project about anime and figures. 🌸
+**smolneko** is an open-source project about anime and figures. 🌸
 
-This is the **API** of the project. The [website](https://github.com/smolneko-team/smolneko) is currently under development, stay tuned for updates.
+This is the **API** of the project. The [web app](https://github.com/smolneko-team/smol) is currently under development, stay tuned for updates.
 
 ## Development status
 
