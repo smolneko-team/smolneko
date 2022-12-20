@@ -5,6 +5,7 @@ import (
 
 	"github.com/smolneko-team/smolneko/config"
 	v1 "github.com/smolneko-team/smolneko/internal/controller/http/v1"
+	"github.com/smolneko-team/smolneko/internal/infrastructure/repo"
 	"github.com/smolneko-team/smolneko/internal/usecase"
 	"github.com/smolneko-team/smolneko/internal/usecase/repo"
 	"github.com/smolneko-team/smolneko/pkg/httpserver"
@@ -34,7 +35,7 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	figuresUseCase := usecase.NewFigures(repo.NewFiguresRepo(pg))
+	figuresUseCase := usecase.NewFigures(repo.NewFiguresRepo(pg, cfg.Storage))
 	charactersUseCase := usecase.NewCharacters(repo.NewCharactersRepo(pg))
 	imagesUseCase := usecase.NewImages(repo.NewImagesRepo(pg, cfg.Storage))
 

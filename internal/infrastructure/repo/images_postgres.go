@@ -85,7 +85,7 @@ func (r *ImagesRepo) GetImagesPathByEntityId(ctx context.Context, id, entity, pr
 	if len(images) > 0 {
 		images, err = r.signURLs(images)
 		if err != nil {
-			return nil, fmt.Errorf("FiguresRepo - GetFigures - SignURLs: %w", err)
+			return nil, fmt.Errorf("ImagesRepo - GetImagesPathByEntityId - SignURLs: %w", err)
 		}
 	}
 
@@ -107,7 +107,9 @@ func (r *ImagesRepo) signURLs(images []model.Image) ([]model.Image, error) {
 
 	for i := 0; i < len(images); i++ {
 		url := base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("s3://%s/%s", r.Bucket, images[i].URL)))
-		path := fmt.Sprintf("%s/%s", r.ProcOpts, url)
+
+		procOpts := ""
+		path := fmt.Sprintf("%s/%s", procOpts, url)
 
 		mac := hmac.New(sha256.New, keyBin)
 		mac.Write(saltBin)

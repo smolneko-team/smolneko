@@ -2,31 +2,40 @@ package repo
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/smolneko-team/smolneko/config"
 	"github.com/smolneko-team/smolneko/internal/model"
 	"github.com/smolneko-team/smolneko/pkg/postgres"
 )
 
 type FiguresRepo struct {
 	*postgres.Postgres
+	config.Storage
 }
 
-func NewFiguresRepo(pg *postgres.Postgres) *FiguresRepo {
-	return &FiguresRepo{pg}
+func NewFiguresRepo(pg *postgres.Postgres, s config.Storage) *FiguresRepo {
+	return &FiguresRepo{pg, s}
 }
 
+// GetFigureById
 func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figure, error) {
 	figure := model.Figure{}
 
-	sql, args, err := r.Builder.
-		Select("id, character_id, name, description, type, version, size, height, " +
-			"materials, release_date, manufacturer, links, price, created_at, updated_at, is_nsfw, is_draft").
-		From("figures").
-		Where(sq.Eq{"id": id}).
-		ToSql()
+	lang := "en"
 
+	query := r.Builder.
+		Select("id, character_id, name, type, version, size, height, "+
+			"materials, release_date, manufacturer, links, price, created_at, updated_at, is_nsfw, is_draft").
+		Column("COALESCE(description -> ? #>>'{}', description -> ? #>>'{}') as description", lang, "en").
+		Where(sq.Eq{"id": id})
+
+	sql, args, err := query.ToSql()
 	if err != nil {
 		return figure, fmt.Errorf("FiguresRepo - GetFigureById - r.Builder: %w", err)
 	}
@@ -36,7 +45,6 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 		&figure.ID,
 		&figure.CharacterID,
 		&figure.Name,
-		&figure.Description,
 		&figure.Type,
 		&figure.Version,
 		&figure.Size,
@@ -50,6 +58,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 		&figure.UpdatedAt,
 		&figure.IsNSFW,
 		&figure.IsDraft,
+		&figure.Description,
 	)
 	if err != nil {
 		return figure, fmt.Errorf("FiguresRepo - GetFigureById - row.Scan: %w", err)
@@ -58,6 +67,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 	return figure, nil
 }
 
+// GetFigures -
 func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) ([]model.Figure, string, string, error) {
 	if count > 50 {
 		count = 50
@@ -70,7 +80,7 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 		Column("COALESCE(description -> ? #>>'{}', description -> ? #>>'{}') as description", lang, "en").
 		From("figures")
 
-	query := r.Builder.Select("figures_cols.*")
+	query := r.Builder.Select("figures_cols.*, COALESCE(NULLIF(image_path, null), '') as image_path, COALESCE(NULLIF(blurhash, null), '') as blurhash")
 
 	if cursor != "" {
 		created, id, suffix, err := decodeCursor(cursor)
@@ -109,7 +119,9 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 	}
 	columns = columns.Limit(uint64(count))
 
-	query = query.FromSelect(columns, "figures_cols")
+	query = query.FromSelect(columns, "figures_cols").
+		LeftJoin("figures_images ON figures_cols.id = figure_id AND preview = 'true'")
+
 	sql, args, err := query.ToSql()
 	if err != nil {
 		return nil, "", "", fmt.Errorf("FiguresRepo - GetFigures - r.Builder: %w", err)
@@ -144,12 +156,22 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 			&figure.IsNSFW,
 			&figure.IsDraft,
 			&figure.Description,
+			&figure.Preview.URL,
+			&figure.Preview.BlurHash,
 		)
 		if err != nil {
 			return nil, "", "", fmt.Errorf("FiguresRepo - GetFigures - rows.Scan: %w", err)
 		}
 
 		figures = append(figures, figure)
+	}
+
+	figures, err = r.signURLs(figures)
+	if len(figures) > 0 {
+		figures, err = r.signURLs(figures)
+		if err != nil {
+			return nil, "", "", fmt.Errorf("FiguresRepo - GetFigures - signURLs: %w", err)
+		}
 	}
 
 	var previousCursor string
@@ -163,4 +185,36 @@ func (r *FiguresRepo) GetFigures(ctx context.Context, count int, cursor string) 
 	}
 
 	return figures, nextCursor, previousCursor, nil
+}
+
+// signURLs -
+func (r *FiguresRepo) signURLs(figures []model.Figure) ([]model.Figure, error) {
+	var keyBin, saltBin []byte
+	var err error
+
+	if keyBin, err = hex.DecodeString(r.ImgKey); err != nil {
+		return nil, fmt.Errorf("can't decode key - %w", err)
+	}
+
+	if saltBin, err = hex.DecodeString(r.ImgSalt); err != nil {
+		return nil, fmt.Errorf("can't decode salt - %w", err)
+	}
+
+	for i := 0; i < len(figures); i++ {
+		if figures[i].Preview.URL == "" {
+			continue
+		}
+		url := base64.RawURLEncoding.EncodeToString([]byte(fmt.Sprintf("s3://%s/%s", r.Bucket, figures[i].Preview.URL)))
+
+		procOpts := "/h:512"
+		path := fmt.Sprintf("%s/%s", procOpts, url)
+
+		mac := hmac.New(sha256.New, keyBin)
+		mac.Write(saltBin)
+		mac.Write([]byte(path))
+
+		signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+		figures[i].Preview.URL = fmt.Sprintf("%s/%s%s", r.ImgURL, signature, path)
+	}
+	return figures, nil
 }

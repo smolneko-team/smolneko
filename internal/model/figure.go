@@ -23,4 +23,5 @@ type Figure struct {
 	DeletedAt    *time.Time           `json:"deleted_at,omitempty"`
 	IsNSFW       bool                 `json:"is_nsfw"`
 	IsDraft      bool                 `json:"is_draft"`
+	Preview      Image                `json:"preview,omitempty"`
 }
