@@ -57,9 +57,10 @@ services:
       - DB_NAME=smolneko
       - DB_SSL_MODE=disable
       - DB_POOL_MAX=1
-      - STAGE_STATUS=dev
+      - APP_STAGE_STATUS=dev
+      - APP_LOG_LEVEL=debug
       - HTTP_PORT=3120
-      - LOG_LEVEL=debug
+      - HTTP_WEB_URLS=https://example.com
     ports:
       - "3120:3120"
     depends_on:

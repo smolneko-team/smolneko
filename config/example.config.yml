@@ -5,6 +5,7 @@ app:
 
 http:
   port: '3120'
+  web_url: 'https://example.com'
 
 logger:
   log_level: 'debug'
@@ -23,4 +24,3 @@ storage:
   img_salt: '00e569c72661963f8e083bf6691f8aa632248848d48f3db84af7f58025500c2515f9663cbc846b1ace85fcfb0954a2ca4e7c41dbcea01f2e39ca001ce42c9296'
   bucket: 'test'
   img_url: 'http://localhost:8080'
-  proc_opts: ' '

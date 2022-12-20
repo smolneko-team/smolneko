@@ -19,12 +19,13 @@ type Config struct {
 type App struct {
 	Name        string `env-required:"true" yaml:"name" env:"APP_NAME"`
 	Version     string `env-required:"true" yaml:"version" env:"APP_VERSION"`
-	StageStatus string `env-required:"true" yaml:"stage_status" env:"STAGE_STATUS"`
+	StageStatus string `env-required:"true" yaml:"stage_status" env:"APP_STAGE_STATUS"`
 }
 
 // HTTP -
 type HTTP struct {
-	Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+	Port    string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+	WebUrls string `env-required:"true" yaml:"web_urls" env:"HTTP_WEB_URLS"`
 }
 
 // Log -
@@ -51,11 +52,10 @@ type DB struct {
 //
 // Processing options — https://docs.imgproxy.net/generating_the_url?id=processing-options
 type Storage struct {
-	ImgKey   string `env-required:"true" yaml:"img_key" env:"IMG_KEY"`
-	ImgSalt  string `env-required:"true" yaml:"img_salt" env:"IMG_SALT"`
-	Bucket   string `env-required:"true" yaml:"bucket" env:"BUCKET"`
-	ImgURL   string `env-required:"true" yaml:"img_url" env:"IMG_URL"`
-	ProcOpts string `env-required:"true" yaml:"proc_opts" env:"PROC_OPTS"`
+	ImgURL  string `env-required:"true" yaml:"img_url" env:"STORAGE_IMG_URL"`
+	ImgKey  string `env-required:"true" yaml:"img_key" env:"STORAGE_IMG_KEY"`
+	ImgSalt string `env-required:"true" yaml:"img_salt" env:"STORAGE_IMG_SALT"`
+	Bucket  string `env-required:"true" yaml:"bucket" env:"STORAGE_BUCKET"`
 }
 
 // NewConfig returns app config.
