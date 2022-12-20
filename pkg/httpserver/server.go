@@ -1,7 +1,7 @@
 package httpserver
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	_defaultReadTimeout  = 5 * time.Second
-	_defaultWriteTimeout = 5 * time.Second
-	_defaultAddr         = ":3120"
+	defaultReadTimeout  = 5 * time.Second
+	defaultWriteTimeout = 5 * time.Second
+	defaultAddr         = ":3120"
 )
 
 type Server struct {
@@ -23,12 +23,14 @@ type Server struct {
 
 func FiberConfig(status, appName string) fiber.Config {
 	config := fiber.Config{
-		AppName:               appName,
-		DisableStartupMessage: true,
-		EnablePrintRoutes:     false,
-		ReadTimeout:           _defaultReadTimeout,
-		WriteTimeout:          _defaultWriteTimeout,
-		IdleTimeout:           60 * time.Second,
+		AppName:                   appName,
+		ServerHeader:              appName + " API",
+		DisableStartupMessage:     true,
+		DisableDefaultContentType: false,
+		EnablePrintRoutes:         false,
+		ReadTimeout:               defaultReadTimeout,
+		WriteTimeout:              defaultWriteTimeout,
+		IdleTimeout:               60 * time.Second,
 	}
 
 	if status == "dev" {
@@ -42,7 +44,7 @@ func FiberConfig(status, appName string) fiber.Config {
 func New(app *fiber.App, opts ...Option) *Server {
 	s := &Server{
 		server: app,
-		port:   _defaultAddr,
+		port:   defaultAddr,
 	}
 
 	for _, opt := range opts {
@@ -50,27 +52,21 @@ func New(app *fiber.App, opts ...Option) *Server {
 	}
 
 	s.start()
-
 	return s
 }
+
 func (s *Server) start() {
-	idleConnsClosed := make(chan struct{})
-
-	// TODO Graceful Shutdown
 	go func() {
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-		<-c
-
-		if err := s.server.Shutdown(); err != nil {
-			fmt.Errorf("server shutdown error - %w", err)
+		if err := s.server.Listen(s.port); err != nil {
+			log.Fatalf("server shutdown error - %v", err)
 		}
-
-		close(idleConnsClosed)
 	}()
 
-	// Run server
-	if err := s.server.Listen(s.port); err != nil {
-		fmt.Errorf("server listen %w", err)
-	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+	_ = <-c
+	log.Println("Gracefully shutting down...")
+	_ = s.server.Shutdown()
+	log.Println("App was successful shutdown.")
 }
