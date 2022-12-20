@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/smolneko-team/smolneko/config"
 	v1 "github.com/smolneko-team/smolneko/internal/controller/http/v1"
@@ -28,7 +29,11 @@ func Run(cfg *config.Config) {
 		cfg.DB.SSLMode,
 	)
 
-	pg, err := postgres.New(url, postgres.MaxPoolSize(cfg.DB.PoolMax))
+	pg, err := postgres.New(url,
+		postgres.MaxPoolSize(cfg.DB.PoolMax),
+		postgres.ConnAttempts(10),
+		postgres.ConnTimeout(5*time.Second),
+	)
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 	}
