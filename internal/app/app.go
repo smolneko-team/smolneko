@@ -7,7 +7,6 @@ import (
 	v1 "github.com/smolneko-team/smolneko/internal/controller/http/v1"
 	"github.com/smolneko-team/smolneko/internal/infrastructure/repo"
 	"github.com/smolneko-team/smolneko/internal/usecase"
-	"github.com/smolneko-team/smolneko/internal/usecase/repo"
 	"github.com/smolneko-team/smolneko/pkg/httpserver"
 	"github.com/smolneko-team/smolneko/pkg/logger"
 	"github.com/smolneko-team/smolneko/pkg/postgres"
