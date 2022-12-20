@@ -113,11 +113,7 @@ func (l *Logger) log(level, message any, args ...any) {
 			l.logger.Warn().Msgf(msg, args...)
 		}
 	case "error":
-		if l.logger.GetLevel() == zerolog.DebugLevel {
-			l.logger.Debug().Msgf(msg, args...)
-		} else {
-			l.logger.Error().Msgf(msg, args...)
-		}
+		l.logger.Error().Msgf(msg, args...)
 	case "fatal":
 		l.logger.Fatal().Msgf(msg, args...)
 	default:
