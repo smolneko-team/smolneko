@@ -66,8 +66,8 @@ type figureResponse struct {
 
 func (r *figuresRoutes) figure(c *fiber.Ctx) error {
 	id := c.Params("id")
-	if _, err := strconv.Atoi(id); err == nil {
-		r.l.Error(errors.New("route parameter 'id' is not a string"), "http - v1 - figure - id")
+	if _, err := strconv.Atoi(id); err == nil || len(id) != 21 {
+		r.l.Error(errors.New("route parameter 'id' is not a nanoid(21)"), "http - v1 - figure - id")
 		return errorResponse(c, fiber.StatusBadRequest, "Route parameter 'id' is not a valid id.")
 	}
 
