@@ -33,6 +33,7 @@ func (r *FiguresRepo) GetFigureById(ctx context.Context, id string) (model.Figur
 		Select("id, character_id, name, type, version, size, height, "+
 			"materials, release_date, manufacturer, links, price, created_at, updated_at, is_nsfw, is_draft").
 		Column("COALESCE(description -> ? #>>'{}', description -> ? #>>'{}') as description", lang, "en").
+		From("figures").
 		Where(sq.Eq{"id": id})
 
 	sql, args, err := query.ToSql()
